@@ -22,10 +22,36 @@ DOTFILES := \
 	.gitconfig \
 	.tmux.conf
 
-# List config directories/files (these go in .config/)
-CONFIG_FILES := \
-	nvim/init.vim \
-	fish/config.fish
+# List .config subdirectories to symlink as a whole
+# Each entry is symlinked as ~/.config/<dir> -> <dotfiles>/.config/<dir>
+#
+# Note: Some Omarchy dirs have nested paths (e.g. Typora/themes, chromium/Default).
+# Symlinking the top-level dir (Typora, chromium) covers those and is usually preferable,
+# but only add them if you actually track those dirs in your dotfiles repo.
+CONFIG_DIRS := \
+	nvim \
+	zsh \
+	alacritty \
+	btop \
+	elephant \
+	environment.d \
+	fastfetch \
+	fcitx5 \
+	fontconfig \
+	ghostty \
+	git \
+	hypr \
+	hyprland-preview-share-picker \
+	imv \
+	kitty \
+	lazygit \
+	omarchy \
+	opencode \
+	swayosd \
+	systemd \
+	tmux \
+	uwsm \
+	walker
 
 .PHONY: all install uninstall clean backup help
 
@@ -81,34 +107,32 @@ install-dotfiles:
 	done
 
 install-config:
-	@for file in $(CONFIG_FILES); do \
-		target=$(DOTFILES_DIR)/.config/$$file; \
-		link=$(HOME_DIR)/.config/$$file; \
-		link_dir=$$(dirname $$link); \
+	@mkdir -p $(HOME_DIR)/.config
+	@for dir in $(CONFIG_DIRS); do \
+		target=$(DOTFILES_DIR)/.config/$$dir; \
+		link=$(HOME_DIR)/.config/$$dir; \
 		if [ -e $$target ]; then \
-			mkdir -p $$link_dir; \
 			if [ -L $$link ]; then \
 				link_target=$$(readlink $$link); \
 				if [ "$$link_target" = "$$target" ]; then \
-					echo -e "$(YELLOW)✓$(NC) .config/$$file already symlinked"; \
+					echo -e "$(YELLOW)✓$(NC) .config/$$dir already symlinked"; \
 				else \
-					echo -e "$(YELLOW)⚠$(NC) .config/$$file is symlinked to $$link_target, updating..."; \
+					echo -e "$(YELLOW)⚠$(NC) .config/$$dir is symlinked to $$link_target, updating..."; \
 					rm $$link; \
 					ln -s $$target $$link; \
-					echo -e "$(GREEN)✓$(NC) Updated symlink for .config/$$file"; \
+					echo -e "$(GREEN)✓$(NC) Updated symlink for .config/$$dir"; \
 				fi; \
-			elif [ -e $$link ]; then \
-				echo -e "$(YELLOW)⚠$(NC) Backing up existing .config/$$file"; \
-				mkdir -p $(BACKUP_DIR)/.config/$$(dirname $$file); \
-				mv $$link $(BACKUP_DIR)/.config/$$file.backup; \
+			elif [ -d $$link ]; then \
+				echo -e "$(YELLOW)⚠$(NC) Backing up existing .config/$$dir"; \
+				mv $$link $(BACKUP_DIR)/$$dir.backup; \
 				ln -s $$target $$link; \
-				echo -e "$(GREEN)✓$(NC) Symlinked .config/$$file"; \
+				echo -e "$(GREEN)✓$(NC) Symlinked .config/$$dir"; \
 			else \
 				ln -s $$target $$link; \
-				echo -e "$(GREEN)✓$(NC) Symlinked .config/$$file"; \
+				echo -e "$(GREEN)✓$(NC) Symlinked .config/$$dir"; \
 			fi; \
 		else \
-			echo -e "$(YELLOW)⚠$(NC) .config/$$file not found in $(DOTFILES_DIR), skipping"; \
+			echo -e "$(YELLOW)⚠$(NC) .config/$$dir not found in $(DOTFILES_DIR), skipping"; \
 		fi; \
 	done
 
@@ -129,14 +153,14 @@ uninstall:
 			fi; \
 		fi; \
 	done
-	@for file in $(CONFIG_FILES); do \
-		link=$(HOME_DIR)/.config/$$file; \
+	@for dir in $(CONFIG_DIRS); do \
+		link=$(HOME_DIR)/.config/$$dir; \
 		if [ -L $$link ]; then \
-			echo -e "$(YELLOW)✗$(NC) Removing symlink for .config/$$file"; \
+			echo -e "$(YELLOW)✗$(NC) Removing symlink for .config/$$dir"; \
 			rm $$link; \
-			if [ -e $(BACKUP_DIR)/.config/$$file.backup ]; then \
-				echo -e "$(GREEN)✓$(NC) Restoring backup for .config/$$file"; \
-				mv $(BACKUP_DIR)/.config/$$file.backup $$link; \
+			if [ -e $(BACKUP_DIR)/$$dir.backup ]; then \
+				echo -e "$(GREEN)✓$(NC) Restoring backup for .config/$$dir"; \
+				mv $(BACKUP_DIR)/$$dir.backup $$link; \
 			fi; \
 		fi; \
 	done
