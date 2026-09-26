@@ -1,0 +1,4 @@
+ACTION=="add", SUBSYSTEM=="input", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_BUS}=="usb", RUN+="/usr/local/bin/toggle-internal-keyboard.sh"
+ACTION=="remove", SUBSYSTEM=="input", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_BUS}=="usb", RUN+="/usr/local/bin/toggle-internal-keyboard.sh"
+ACTION=="add", SUBSYSTEM=="input", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_BUS}=="bluetooth", RUN+="/usr/local/bin/toggle-internal-keyboard.sh"
+ACTION=="remove", SUBSYSTEM=="input", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_BUS}=="bluetooth", RUN+="/usr/local/bin/toggle-internal-keyboard.sh"

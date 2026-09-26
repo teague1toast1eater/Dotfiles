@@ -1,0 +1,12 @@
+#!/bin/bash
+# Switch the external monitor between mirrored and extended display modes.
+# Wraps Omarchy's built-in internal-monitor-mirror toggle.
+
+case "$1" in
+  mirror) exec omarchy-hyprland-monitor-internal-mirror on ;;
+  extend) exec omarchy-hyprland-monitor-internal-mirror off ;;
+  *)
+    echo "Usage: monitor {mirror|extend}" >&2
+    exit 1
+    ;;
+esac

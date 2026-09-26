@@ -1,0 +1,1 @@
+/home/winton/.config/omarchy/current/theme/neovim.lua

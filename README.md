@@ -39,8 +39,22 @@ That's it! Your dotfiles are now symlinked to their proper locations.
 
 - `make install` - Install dotfiles by creating symlinks (backs up existing files)
 - `make uninstall` - Remove all symlinks and restore backups
+- `make install-system` - Install root-owned files from `system/` (needs sudo)
+- `make uninstall-system` - Remove `system/` symlinks and restore backups (needs sudo)
 - `make clean` - Remove backup directory
 - `make help` - Show available commands
+
+## System Files (root-owned)
+
+Some files, like udev rules, don't live under `$HOME` and need root to install.
+These are mirrored under `system/` using their real absolute path (e.g.
+`system/etc/udev/rules.d/foo.rules` -> `/etc/udev/rules.d/foo.rules`), listed
+in the `SYSTEM_FILES` variable in the Makefile, and symlinked into place by
+`make install-system` (sudo required; same backup/detection behavior as
+`make install`).
+
+Currently included:
+- `system/etc/udev/rules.d/99-internal-keyboard-toggle.rules` + `system/usr/local/bin/toggle-internal-keyboard.sh` - disables the internal laptop keyboard while an external USB/Bluetooth keyboard is connected.
 
 ## What Gets Symlinked
 
