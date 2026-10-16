@@ -1,1 +1,1 @@
-/home/winton/.config/omarchy/current/theme/neovim.lua
+/home/winton/.local/state/omarchy/current/theme/neovim.lua

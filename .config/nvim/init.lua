@@ -46,7 +46,8 @@ vim.keymap.set("n", "<leader>?", ':let @/ = ""<CR>:call gruvbox#hls_show()<CR>?'
 -- vim.cmd("colorscheme retrobox")
 -- vim.cmd("colorscheme gruvbox")
 -- vim.cmd("colorscheme apprentice")
-vim.cmd("colorscheme murphy")
+-- vim.cmd("colorscheme murphy")
+vim.cmd("colorscheme elflord")
 
 -- Line numbers
 vim.opt.number = true
