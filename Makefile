@@ -22,7 +22,11 @@ DOTFILES := \
 	.vimrc \
 	.gitconfig \
 	.tmux.conf \
-	.local/bin/monitor
+	.local/bin/monitor \
+	.local/bin/wallpaper \
+	.local/bin/hypr-terminal-cwd \
+	.local/bin/hypr-power-menu \
+	.local/bin/hypr-keybindings
 
 # List .config subdirectories to symlink as a whole
 # Each entry is symlinked as ~/.config/<dir> -> <dotfiles>/.config/<dir>
@@ -54,6 +58,18 @@ CONFIG_DIRS := \
 	tmux \
 	uwsm \
 	walker
+
+# ~/.config/hypr depends on the host:
+#   Omarchy                       -> .config/hypr         (layers on /usr/share/omarchy)
+#   anything else (e.g. CachyOS)  -> .config/hypr-cachyos (standalone, same keybindings)
+# Override with: make install HYPR_SRC=hypr-cachyos
+ifneq ($(wildcard /usr/share/omarchy),)
+HYPR_SRC ?= hypr
+else
+HYPR_SRC ?= hypr-cachyos
+# Omarchy's own config dir is useless without Omarchy installed.
+CONFIG_DIRS := $(filter-out omarchy,$(CONFIG_DIRS))
+endif
 
 # Root-owned files (outside $HOME), mirrored under system/ with the same
 # absolute path structure, e.g. system/etc/foo -> /etc/foo.
@@ -123,7 +139,9 @@ install-dotfiles:
 install-config:
 	@mkdir -p $(HOME_DIR)/.config
 	@for dir in $(CONFIG_DIRS); do \
-		target=$(DOTFILES_DIR)/.config/$$dir; \
+		src=$$dir; \
+		if [ "$$dir" = hypr ]; then src=$(HYPR_SRC); fi; \
+		target=$(DOTFILES_DIR)/.config/$$src; \
 		link=$(HOME_DIR)/.config/$$dir; \
 		if [ -e $$target ]; then \
 			if [ -L $$link ]; then \

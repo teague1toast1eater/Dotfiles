@@ -70,6 +70,39 @@ The Makefile will create symlinks for files listed in the `DOTFILES` and `CONFIG
 - `.config/nvim/init.vim`
 - `.config/fish/config.fish`
 
+## Hyprland on Omarchy vs. CachyOS
+
+`~/.config/hypr` points at a different directory depending on the machine:
+
+| Host | `~/.config/hypr` → | Notes |
+|------|--------------------|-------|
+| Omarchy (`/usr/share/omarchy` exists) | `.config/hypr` | Small overrides on top of Omarchy's defaults |
+| Anything else (CachyOS) | `.config/hypr-cachyos` | Standalone: Omarchy's default keybindings + my overrides, stock tools only |
+
+Force one with `make install HYPR_SRC=hypr-cachyos`. On non-Omarchy hosts, `.config/omarchy` is not linked.
+
+When you change a binding in `.config/hypr/bindings.lua`, mirror it in
+`.config/hypr-cachyos/bindings.lua`. Pick apps (terminal, browser, launcher)
+in `o.apps` in `.config/hypr-cachyos/helpers.lua`.
+
+**CachyOS packages the standalone config expects:**
+`hyprlock hypridle waybar swaync (or mako) walker (or fuzzel/rofi) awww (or swaybg)
+grim slurp wl-clipboard cliphist hyprpicker brightnessctl playerctl jq libnotify
+pavucontrol blueman` and `uwsm` (optional).
+
+### Wallpapers
+
+`~/.local/bin/wallpaper` stands in for `omarchy theme bg`. Images live in
+`~/Wallpapers` (or `$WALLPAPER_DIR`) and are not tracked in git.
+
+| Key | Action |
+|-----|--------|
+| `SUPER + CTRL + SPACE` / `SUPER + CTRL + W` | Pick a wallpaper (launcher) |
+| `SUPER + SHIFT + CTRL + W` | Next wallpaper |
+
+`wallpaper restore` runs at login. The current image is linked at
+`~/.cache/wallpaper/current`, which hyprlock uses as its background.
+
 ## Adding New Dotfiles
 
 To manage additional dotfiles:

@@ -48,3 +48,27 @@
 --     column_width = 0.97,
 --   },
 -- })
+
+-- Personal look'n'feel (moved from the old appa-in-flight theme hyprland.conf).
+-- Comment out any block to fall back to Omarchy's default for it.
+hl.config({
+	general = {
+		border_size = 5,
+		gaps_in = 2,
+		gaps_out = 3,
+	},
+	decoration = {
+		rounding = 9,
+		dim_inactive = true,
+		dim_strength = 0.30, -- 0.0 = no dim, 1.0 = fully black
+	},
+})
+
+-- Fast border colour change, plus a slow, endlessly rotating border gradient.
+hl.animation({ leaf = "border", enabled = true, speed = 1, bezier = "linear" })
+hl.animation({ leaf = "borderangle", enabled = true, speed = 24, bezier = "linear", style = "loop" })
+
+-- Opt another application in to Omarchy's standard transparency.
+-- Find its class with: hyprctl clients
+-- o.transparent_window("my-app")
+-- o.transparent_window("my-app", "0.9 0.85") -- Custom active/inactive opacity.

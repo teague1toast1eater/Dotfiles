@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+# Set, cycle, and restore wallpapers without Omarchy.
+#
+#   wallpaper set <image>   set a specific image
+#   wallpaper next          next image in $WALLPAPER_DIR (wraps around)
+#   wallpaper prev          previous image
+#   wallpaper random        random image
+#   wallpaper pick          choose one with the launcher (walker/fuzzel/rofi/wofi)
+#   wallpaper restore       re-apply the last wallpaper (run at login)
+#   wallpaper current       print the current image path
+#
+# Images come from $WALLPAPER_DIR (default: ~/Wallpapers). The current choice is
+# a symlink at ~/.cache/wallpaper/current, which hyprlock also uses.
+# Backend: awww/swww if installed (with transitions), otherwise swaybg.
+
+set -euo pipefail
+
+WALLPAPER_DIR="${WALLPAPER_DIR:-$HOME/Wallpapers}"
+STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/wallpaper"
+CURRENT="$STATE_DIR/current"
+
+die() {
+  notify-send -u low "Wallpaper" "$1" 2>/dev/null || true
+  echo "wallpaper: $1" >&2
+  exit 1
+}
+
+list_images() {
+  [[ -d $WALLPAPER_DIR ]] || die "No wallpaper folder at $WALLPAPER_DIR"
+  find -L "$WALLPAPER_DIR" -type f \
+    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \) |
+    sort
+}
+
+current() {
+  [[ -L $CURRENT ]] && readlink -f "$CURRENT" || true
+}
+
+apply() {
+  local image
+  image="$(readlink -f "$1")"
+  [[ -f $image ]] || die "Not a file: $1"
+
+  mkdir -p "$STATE_DIR"
+  ln -sfn "$image" "$CURRENT"
+
+  local daemon=""
+  if command -v awww >/dev/null; then
+    daemon=awww
+  elif command -v swww >/dev/null; then
+    daemon=swww
+  fi
+
+  if [[ -n $daemon ]]; then
+    if ! "$daemon" query >/dev/null 2>&1; then
+      setsid -f "$daemon-daemon" >/dev/null 2>&1
+      for _ in {1..20}; do
+        "$daemon" query >/dev/null 2>&1 && break
+        sleep 0.1
+      done
+    fi
+    "$daemon" img "$image" --transition-type grow --transition-duration 1 >/dev/null
+  elif command -v swaybg >/dev/null; then
+    # Start the new swaybg before killing the old one so there's no black flash.
+    local old
+    old="$(pgrep -x swaybg || true)"
+    setsid -f swaybg -i "$image" -m fill >/dev/null 2>&1
+    sleep 0.2
+    [[ -n $old ]] && kill $old 2>/dev/null || true
+  else
+    die "Install awww (or swww) or swaybg to set wallpapers"
+  fi
+}
+
+step() {
+  local direction="$1" images=() now index count
+  mapfile -t images < <(list_images)
+  count=${#images[@]}
+  ((count > 0)) || die "No images in $WALLPAPER_DIR"
+
+  now="$(current)"
+  index=-1
+  for i in "${!images[@]}"; do
+    [[ "$(readlink -f "${images[$i]}")" == "$now" ]] && index=$i && break
+  done
+
+  apply "${images[$(( (index + direction + count) % count ))]}"
+}
+
+launcher_menu() {
+  local prompt="$1"
+  if command -v walker >/dev/null; then
+    walker --dmenu -p "$prompt"
+  elif command -v fuzzel >/dev/null; then
+    fuzzel --dmenu -p "$prompt "
+  elif command -v rofi >/dev/null; then
+    rofi -dmenu -i -p "$prompt"
+  elif command -v wofi >/dev/null; then
+    wofi --dmenu -p "$prompt"
+  else
+    die "Install walker, fuzzel, rofi, or wofi for the picker"
+  fi
+}
+
+pick() {
+  local images choice
+  images="$(list_images)"
+  [[ -n $images ]] || die "No images in $WALLPAPER_DIR"
+  choice="$(sed "s|^$WALLPAPER_DIR/||" <<<"$images" | launcher_menu "Wallpaper")" || exit 0
+  [[ -n $choice ]] && apply "$WALLPAPER_DIR/$choice"
+}
+
+case "${1:-}" in
+  set) [[ -n ${2:-} ]] || die "Usage: wallpaper set <image>"; apply "$2" ;;
+  next) step 1 ;;
+  prev) step -1 ;;
+  random)
+    image="$(list_images | shuf -n1)"
+    [[ -n $image ]] || die "No images in $WALLPAPER_DIR"
+    apply "$image"
+    ;;
+  pick) pick ;;
+  restore)
+    if [[ -n "$(current)" && -f "$(current)" ]]; then
+      apply "$(current)"
+    else
+      step 1
+    fi
+    ;;
+  current) current ;;
+  *)
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+    ;;
+esac

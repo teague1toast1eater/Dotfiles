@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# System menu (Omarchy's SUPER + ESCAPE) using whichever launcher is installed.
+
+menu() {
+  if command -v walker >/dev/null; then
+    walker --dmenu -p "System"
+  elif command -v fuzzel >/dev/null; then
+    fuzzel --dmenu -p "System "
+  elif command -v rofi >/dev/null; then
+    rofi -dmenu -i -p "System"
+  else
+    wofi --dmenu -p "System"
+  fi
+}
+
+choice="$(printf '%s\n' "  Lock" "󰤄  Suspend" "󰍃  Logout" "󰜉  Restart" "󰐥  Shutdown" | menu)"
+
+case "$choice" in
+  *Lock) loginctl lock-session ;;
+  *Suspend) systemctl suspend ;;
+  *Logout)
+    if command -v uwsm >/dev/null && uwsm check is-active >/dev/null 2>&1; then
+      uwsm stop
+    else
+      hyprctl dispatch 'hl.dsp.exit()'
+    fi
+    ;;
+  *Restart) systemctl reboot ;;
+  *Shutdown) systemctl poweroff ;;
+esac
