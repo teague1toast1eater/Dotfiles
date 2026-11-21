@@ -41,6 +41,7 @@ That's it! Your dotfiles are now symlinked to their proper locations.
 - `make uninstall` - Remove all symlinks and restore backups
 - `make install-system` - Install root-owned files from `system/` (needs sudo)
 - `make uninstall-system` - Remove `system/` symlinks and restore backups (needs sudo)
+- `make install-security` - Install my security/pentesting tools (see below)
 - `make clean` - Remove backup directory
 - `make help` - Show available commands
 
@@ -55,6 +56,24 @@ in the `SYSTEM_FILES` variable in the Makefile, and symlinked into place by
 
 Currently included:
 - `system/etc/udev/rules.d/99-internal-keyboard-toggle.rules` + `system/usr/local/bin/toggle-internal-keyboard.sh` - disables the internal laptop keyboard while an external USB/Bluetooth keyboard is connected.
+
+## Security Tools
+
+`security-tools.sh` (or `make install-security`) installs the security tools I'm
+learning so every machine has the same set. It's safe to re-run, and it ends by
+listing anything that failed to install. To add or remove a tool, edit the lists
+at the top of the script.
+
+- **Official repos:** nmap, whois, bind (dig), wireshark-qt, tcpdump, dsniff,
+  aircrack-ng, hashcat, john, seclists, sqlmap, ghidra, radare2, gdb, binwalk,
+  exiftool, openbsd-netcat, socat
+- **AUR** (needs `yay` or `paru`): burpsuite (Community Edition)
+- **From source:** mdxfind, cloned into `~/tools/mdxfind` and built, with
+  `mdxfind` and `mdsplit` copied to `~/.local/bin`
+
+It also adds you to the `wireshark` group so you can capture without root
+(log out and back in afterwards). hashcat needs a GPU OpenCL/CUDA runtime that
+matches the machine's hardware, so install that separately.
 
 ## What Gets Symlinked
 

@@ -78,7 +78,7 @@ SYSTEM_FILES := \
 	etc/udev/rules.d/99-internal-keyboard-toggle.rules \
 	usr/local/bin/toggle-internal-keyboard.sh
 
-.PHONY: all install uninstall clean backup help install-system uninstall-system
+.PHONY: all install uninstall clean backup help install-system uninstall-system install-security
 
 # Default target
 all: help
@@ -93,6 +93,7 @@ help:
 	@echo "  make clean      - Remove backup directory"
 	@echo "  make install-system   - Install root-owned files from system/ (needs sudo)"
 	@echo "  make uninstall-system - Remove system/ symlinks and restore backups (needs sudo)"
+	@echo "  make install-security - Install the security tools in security-tools.sh (needs sudo)"
 	@echo "  make help       - Show this help message"
 
 install: backup
@@ -214,6 +215,9 @@ uninstall-system:
 	done
 	@sudo udevadm control --reload
 	@echo -e "$(GREEN)System uninstall complete!$(NC)"
+
+install-security:
+	@$(DOTFILES_DIR)/security-tools.sh
 
 backup:
 	@echo -e "$(GREEN)Creating backup directory...$(NC)"
